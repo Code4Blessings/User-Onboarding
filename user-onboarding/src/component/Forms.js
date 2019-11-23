@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { withFormik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import axios from 'axios';
 import './Forms.css';
 
-const Forms = ({values, errors, touched}) => {
+const Forms = ({values, errors, touched, status}) => {
+    const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        status && setUsers(users => [...users, status])
+    },[status])
+
     return (
         <div className="form-container">
         <Form>
@@ -30,6 +37,13 @@ const Forms = ({values, errors, touched}) => {
 
             <button type="submit">Submit</button>
         </Form>
+        {users.map(user => (
+        <ul key={user.id}>
+          <li>Name: {user.name}</li>
+          <li>Email: {user.email}</li>
+          <li>Password: {user.password}</li>
+        </ul>
+      ))}
         </div>
     )
 }
@@ -47,6 +61,15 @@ const FormikForms = withFormik({
         email: Yup.string().required(), 
         password: Yup.string().required()
 }),
+handleSubmit(values, { setStatus }) {
+    axios
+      // values is our object with all our data on it.
+      .post("https://reqres.in/api/users/", values)
+      .then(res => {
+        setStatus(res.data);
+      })
+      .catch(err => console.log(err.res));
+  }
 })(Forms);
 
 export default FormikForms;
